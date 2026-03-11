@@ -85,6 +85,14 @@ func (s *InstanceState) GetPprofCommand(ctx context.Context, p *PprofParam) erro
 		return session.IP()
 	})
 
+	fmt.Printf("total sessions: %d, groups after dedup by IP: %d\n", len(sessions), len(groups))
+	for ip, grpSessions := range groups {
+		names := lo.Map(grpSessions, func(s *models.Session, _ int) string {
+			return fmt.Sprintf("%s(id=%d)", s.ServerName, s.ServerID)
+		})
+		fmt.Printf("  group ip=%s sessions=%v\n", ip, names)
+	}
+
 	type pprofResult struct {
 		sessions []*models.Session
 		data     []byte
@@ -143,6 +151,7 @@ func (s *InstanceState) GetPprofCommand(ctx context.Context, p *PprofParam) erro
 			addr := sessions[0].IP()
 			// TODO add auto detection from configuration API
 			url := fmt.Sprintf("http://%s:%d/debug/pprof/%s?debug=0", addr, p.Port, p.Type)
+			fmt.Printf("fetching pprof from %s\n", url)
 
 			// #nosec
 			resp, err := http.Get(url)

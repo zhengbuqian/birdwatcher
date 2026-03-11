@@ -153,7 +153,8 @@ func (s *InstanceState) GetPprofCommand(ctx context.Context, p *PprofParam) erro
 			}
 			defer resp.Body.Close()
 			if resp.StatusCode != http.StatusOK {
-				result.err = errors.Errorf("unexpected status code %d", resp.StatusCode)
+				errBody, _ := io.ReadAll(resp.Body)
+				result.err = errors.Errorf("unexpected status code %d, body: %s", resp.StatusCode, strings.TrimSpace(string(errBody)))
 				ch <- result
 				return
 			}

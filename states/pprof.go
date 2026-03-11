@@ -80,9 +80,9 @@ func (s *InstanceState) GetPprofCommand(ctx context.Context, p *PprofParam) erro
 		_ = f.Close()
 	}()
 
-	// dedup by serverID, standalone sessions shares same serverID
-	groups := lo.GroupBy(sessions, func(session *models.Session) int64 {
-		return session.ServerID
+	// dedup by IP, standalone sessions share the same process/pprof endpoint
+	groups := lo.GroupBy(sessions, func(session *models.Session) string {
+		return session.IP()
 	})
 
 	type pprofResult struct {
